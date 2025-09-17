@@ -1,12 +1,15 @@
+// src/components/Header.tsx
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LoginButton from "./LoginButton";
+import { useAuth } from "../contexts/AuthContext"; // ← 追加
 
 const Header = () => {
   const location = useLocation();
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const { user, loading } = useAuth(); // ← 追加
 
-  // アクティブなリンクに太字を適用
   const isActive = (path: string) =>
     location.pathname === path
       ? "text-black font-bold"
@@ -20,7 +23,7 @@ const Header = () => {
           🍅 集中トマト
         </h1>
 
-        {/* ✅ PC版メニュー */}
+        {/* PC用メニュー */}
         <nav className="hidden sm:flex items-center space-x-4 text-sm">
           <Link to="/" className={isActive("/")}>ホーム</Link>
           <Link to="/records" className={isActive("/records")}>記録</Link>
@@ -39,16 +42,23 @@ const Header = () => {
           >
             開発者ページ
           </a>
-          <LoginButton />
+          {/* ✅ ログイン状態表示 */}
+          {loading ? (
+            <span>読み込み中...</span>
+          ) : user ? (
+            <span className="text-green-600">
+              ようこそ、{user.displayName || user.email} さん！
+            </span>
+          ) : (
+            <LoginButton />
+          )}
         </nav>
 
-        {/* ✅ スマホ版メニュー */}
+        {/* スマホ用メニュー */}
         <div className="flex flex-col sm:hidden items-center gap-y-1 text-sm">
           <div className="flex gap-x-4">
             <Link to="/" className={isActive("/")}>ホーム</Link>
             <Link to="/records" className={isActive("/records")}>記録</Link>
-
-            {/* 設定ドロップダウンボタン */}
             <button
               onClick={() => setDropdownOpen(!isDropdownOpen)}
               className="text-gray-500 hover:text-black"
@@ -57,7 +67,6 @@ const Header = () => {
             </button>
           </div>
 
-          {/* ドロップダウンメニュー */}
           {isDropdownOpen && (
             <div className="flex flex-col items-center gap-y-1 mt-1">
               <Link to="/settings" className={isActive("/settings")}>設定ページ</Link>
@@ -75,7 +84,16 @@ const Header = () => {
               >
                 開発者ページ
               </a>
-              <LoginButton />
+              {/* ✅ スマホでもログイン状態表示 */}
+              {loading ? (
+                <span>読み込み中...</span>
+              ) : user ? (
+                <span className="text-green-600">
+                  ようこそ、{user.displayName || user.email} さん！
+                </span>
+              ) : (
+                <LoginButton />
+              )}
             </div>
           )}
         </div>
@@ -85,6 +103,7 @@ const Header = () => {
 };
 
 export default Header;
+
 
 
 
