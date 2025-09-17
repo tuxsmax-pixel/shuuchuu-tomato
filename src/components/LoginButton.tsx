@@ -1,10 +1,8 @@
-// src/components/LoginButton.tsx
 import React, { useEffect, useState } from "react";
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   signOut,
   onAuthStateChanged,
   User,
@@ -13,47 +11,48 @@ import { app } from "../firebase";
 
 const LoginButton: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
-  // 🔁 リダイレクト後にユーザー情報を取得
   useEffect(() => {
+    // 🔄 ログイン状態の監視
     const unsubscribe = onAuthStateChanged(auth, (u) => {
-      console.log("Auth state changed:", u);
+      console.log("👀 onAuthStateChanged:", u);
       setUser(u);
+      setLoading(false);
     });
 
-    // リダイレクト結果を取得（1回のみ）
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          console.log("Login (redirect) success:", result.user);
-        }
-      })
-      .catch((error) => {
-        console.error("リダイレクトログインエラー:", error);
-      });
-
+    // クリーンアップ
     return () => unsubscribe();
   }, [auth]);
 
+  // ✅ Googleログイン（Popup版）
   const handleLogin = async () => {
     try {
-      await signInWithRedirect(auth, provider);
-      // ↓ リダイレクトされるのでこの後のコードは実行されない
+      const result = await signInWithPopup(auth, provider);
+      console.log("✅ ログイン成功:", result.user);
+      setUser(result.user); // 状態更新（すぐ反映）
     } catch (error) {
-      console.error("ログインエラー:", error);
+      console.error("❌ ログインエラー:", error);
     }
   };
 
+  // ✅ ログアウト処理
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      console.log("Logged out");
+      console.log("🚪 ログアウト完了");
+      setUser(null);
     } catch (error) {
-      console.error("ログアウトエラー:", error);
+      console.error("❌ ログアウトエラー:", error);
     }
   };
+
+  // ✅ 表示切り替え
+  if (loading) {
+    return <span className="text-sm text-gray-400">読み込み中...</span>;
+  }
 
   if (user) {
     return (
@@ -77,6 +76,7 @@ const LoginButton: React.FC = () => {
 };
 
 export default LoginButton;
+
 
 
 
