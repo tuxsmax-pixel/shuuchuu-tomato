@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged,
   User,
@@ -15,18 +16,31 @@ const LoginButton: React.FC = () => {
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
+  // 🔁 リダイレクト後にユーザー情報を取得
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
-      console.log("Auth state changed:", u); // ← ログ確認
+      console.log("Auth state changed:", u);
       setUser(u);
     });
+
+    // リダイレクト結果を取得（1回のみ）
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          console.log("Login (redirect) success:", result.user);
+        }
+      })
+      .catch((error) => {
+        console.error("リダイレクトログインエラー:", error);
+      });
+
     return () => unsubscribe();
   }, [auth]);
 
   const handleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, provider);
-      console.log("Login success:", result.user); // ← ログ確認
+      await signInWithRedirect(auth, provider);
+      // ↓ リダイレクトされるのでこの後のコードは実行されない
     } catch (error) {
       console.error("ログインエラー:", error);
     }
@@ -35,7 +49,7 @@ const LoginButton: React.FC = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      console.log("Logged out"); // ← ログ確認
+      console.log("Logged out");
     } catch (error) {
       console.error("ログアウトエラー:", error);
     }
@@ -63,6 +77,7 @@ const LoginButton: React.FC = () => {
 };
 
 export default LoginButton;
+
 
 
 
