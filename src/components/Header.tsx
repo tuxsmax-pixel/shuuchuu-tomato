@@ -12,14 +12,14 @@ const Header = () => {
 
   return (
     <header className="bg-white border-b shadow-sm py-3 px-4 sticky top-0 z-50">
-      <div className="max-w-3xl mx-auto flex justify-between items-center">
+      <div className="max-w-3xl mx-auto flex flex-col sm:flex-row sm:justify-between sm:items-center gap-y-2 sm:gap-y-0">
         {/* ロゴ */}
-        <h1 className="text-lg font-bold text-red-500">
+        <h1 className="text-lg font-bold text-red-500 text-center sm:text-left">
           🍅 集中トマト
         </h1>
 
         {/* ナビゲーションメニュー */}
-        <nav className="space-x-4 text-sm flex items-center">
+        <nav className="flex flex-col sm:flex-row items-center sm:space-x-4 text-sm gap-y-1 sm:gap-y-0 text-center sm:text-left">
           <Link to="/" className={isActive("/")}>ホーム</Link>
           <Link to="/records" className={isActive("/records")}>記録</Link>
           <Link to="/settings" className={isActive("/settings")}>設定</Link>
@@ -50,6 +50,7 @@ const Header = () => {
 };
 
 export default Header;
+
 
 
 
