@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { getAuth, signOut } from "firebase/auth";
+import { app } from "../firebase";
 
 // 通知音選択肢（拡張子付きファイル名も指定）
 const soundOptions = [
@@ -86,6 +88,19 @@ const SettingsPage: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  // 🔓 ログアウト処理
+  const handleLogout = async () => {
+    try {
+      const auth = getAuth(app);
+      await signOut(auth);
+      alert("ログアウトしました！");
+      window.location.href = "/"; // ホームに戻す
+    } catch (error) {
+      console.error("❌ ログアウト失敗:", error);
+      alert("ログアウトに失敗しました");
+    }
+  };
+
   return (
     <div className="max-w-md mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">設定</h1>
@@ -131,50 +146,61 @@ const SettingsPage: React.FC = () => {
           バックアップをダウンロード
         </button>
       </div>
+
       {/* 復元セクション */}
-<div className="mt-12">
-  <h2 className="text-lg font-bold mb-3">データの復元</h2>
-  <p className="text-sm text-gray-600 mb-2">
-    バックアップファイル（.json）を選択して復元します。
-  </p>
+      <div className="mt-12">
+        <h2 className="text-lg font-bold mb-3">データの復元</h2>
+        <p className="text-sm text-gray-600 mb-2">
+          バックアップファイル（.json）を選択して復元します。
+        </p>
 
-  <input
-    type="file"
-    accept=".json"
-    onChange={async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+        <input
+          type="file"
+          accept=".json"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
 
-      try {
-        const text = await file.text();
-        const json = JSON.parse(text);
+            try {
+              const text = await file.text();
+              const json = JSON.parse(text);
 
-        // tasksがあるなら保存
-        if (json.tasks) {
-          localStorage.setItem("tasks", JSON.stringify(json.tasks));
-        }
+              // tasksがあるなら保存
+              if (json.tasks) {
+                localStorage.setItem("tasks", JSON.stringify(json.tasks));
+              }
 
-        // 通知音があるなら保存
-        if (json.notificationSound) {
-          localStorage.setItem("notificationSound", json.notificationSound);
-        }
+              // 通知音があるなら保存
+              if (json.notificationSound) {
+                localStorage.setItem("notificationSound", json.notificationSound);
+              }
 
-        alert("復元が完了しました！ページをリロードします。");
-        window.location.reload();
-      } catch (err) {
-        alert("復元に失敗しました。正しいバックアップファイルを選んでください。");
-        console.error(err);
-      }
-    }}
-    className="block mt-2"
-  />
-</div>
+              alert("復元が完了しました！ページをリロードします。");
+              window.location.reload();
+            } catch (err) {
+              alert("復元に失敗しました。正しいバックアップファイルを選んでください。");
+              console.error(err);
+            }
+          }}
+          className="block mt-2"
+        />
+      </div>
 
+      {/* ログアウトセクション */}
+      <div className="mt-12 border-t pt-6">
+        <h2 className="text-lg font-bold mb-3">アカウント</h2>
+        <p className="text-sm text-gray-600 mb-2">
+          現在のGoogleアカウントをログアウトできます。
+        </p>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-red-500 text-white rounded text-sm font-semibold active:scale-95"
+        >
+          ログアウト
+        </button>
+      </div>
     </div>
   );
 };
 
 export default SettingsPage;
-
-
-
