@@ -1,0 +1,8 @@
+{
+  "notificationSound": "chime",
+  "tasks": [
+    { "id": 1, "text": "英単語", "done": false },
+    { "id": 2, "text": "数学", "done": true },
+    { "id": 3, "text": "読書", "done": false }
+  ]
+}
