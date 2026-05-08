@@ -1,19 +1,19 @@
 import React from "react";
 import {
-  getAuth,
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
 } from "firebase/auth";
-import { app } from "../firebase";
+import { auth } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 
 const LoginButton: React.FC = () => {
   const { user, loading } = useAuth();
-  const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
   const handleLogin = async () => {
+    if (!auth) return;
+
     try {
       await signInWithPopup(auth, provider);
     } catch (error) {
@@ -22,6 +22,8 @@ const LoginButton: React.FC = () => {
   };
 
   const handleLogout = async () => {
+    if (!auth) return;
+
     try {
       await signOut(auth);
     } catch (error) {
@@ -30,6 +32,8 @@ const LoginButton: React.FC = () => {
   };
 
   if (loading) return <span className="text-sm text-gray-400">読み込み中...</span>;
+
+  if (!auth) return null;
 
   if (user) {
     return (

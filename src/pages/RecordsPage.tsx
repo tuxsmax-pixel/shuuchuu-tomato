@@ -11,9 +11,9 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, collection, getDocs, doc, getDoc, setDoc } from "firebase/firestore";
-import { app } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, getDocs, doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -37,14 +37,17 @@ const RecordsPage: React.FC = () => {
   const [monthlyGoal, setMonthlyGoal] = useState<number | null>(null);
   const [goalInput, setGoalInput] = useState("");
 
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
   // Firestoreからデータ取得
   useEffect(() => {
+    if (!auth || !db) {
+      setRecords({});
+      setMonthlyGoal(null);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const ref = collection(db, "users", user.uid, "records");
+        const ref = collection(db!, "users", user.uid, "records");
         const snapshot = await getDocs(ref);
 
         const data: Records = {};
@@ -54,7 +57,7 @@ const RecordsPage: React.FC = () => {
         setRecords(data);
 
         // 🎯 目標時間を取得
-        const settingsRef = doc(db, "users", user.uid, "settings", "config");
+        const settingsRef = doc(db!, "users", user.uid, "settings", "config");
         const settingsSnap = await getDoc(settingsRef);
         if (settingsSnap.exists()) {
           const goal = settingsSnap.data().monthlyGoal;
@@ -118,13 +121,13 @@ const RecordsPage: React.FC = () => {
 
   // 🎯 目標保存
   const handleSaveGoal = async () => {
-    const user = auth.currentUser;
+    const user = auth?.currentUser;
     if (!user || !goalInput) return;
 
     const value = parseInt(goalInput);
     if (isNaN(value) || value <= 0) return;
 
-    const ref = doc(db, "users", user.uid, "settings", "config");
+    const ref = doc(db!, "users", user.uid, "settings", "config");
     await setDoc(ref, { monthlyGoal: value }, { merge: true });
     setMonthlyGoal(value);
     setGoalInput("");

@@ -1,6 +1,7 @@
 // src/firebase.ts
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { FirebaseApp, initializeApp } from "firebase/app";
+import { Auth, getAuth } from "firebase/auth";
+import { Firestore, getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -11,8 +12,11 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-// Firebase アプリの初期化
-export const app = initializeApp(firebaseConfig);
+export const isFirebaseConfigured = Object.values(firebaseConfig).every(Boolean);
 
-// Firestore インスタンスの取得と export
-export const db = getFirestore(app);
+export const app: FirebaseApp | null = isFirebaseConfigured
+  ? initializeApp(firebaseConfig)
+  : null;
+
+export const auth: Auth | null = app ? getAuth(app) : null;
+export const db: Firestore | null = app ? getFirestore(app) : null;

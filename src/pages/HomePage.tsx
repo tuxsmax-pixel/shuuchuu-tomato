@@ -1,8 +1,8 @@
 // src/pages/HomePage.tsx
 import React, { useEffect, useState } from "react";
-import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-import { app } from "../firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 
 const HomePage: React.FC = () => {
   const STUDY_TIME = 25 * 60;
@@ -30,9 +30,6 @@ const HomePage: React.FC = () => {
   const [hasEvent, setHasEvent] = useState(false);
   const [showInvalidDateMessage, setShowInvalidDateMessage] = useState(false);
 
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
   const calcRemainingDays = (dateStr: string) => {
     if (!dateStr) return 0;
     const today = new Date();
@@ -53,6 +50,11 @@ const HomePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!auth || !db) {
+      setLoadingEvent(false);
+      return;
+    }
+
     const unregister = onAuthStateChanged(auth, async (user) => {
       // 初期化（前のアカウントのデータ残さない）
       setUser(user);
@@ -62,7 +64,7 @@ const HomePage: React.FC = () => {
       setShowInvalidDateMessage(false);
 
       if (user) {
-        const ref = doc(db, "users", user.uid, "settings", "event");
+        const ref = doc(db!, "users", user.uid, "settings", "event");
         const snap = await getDoc(ref);
         if (snap.exists()) {
           const data = snap.data();
@@ -157,10 +159,10 @@ const HomePage: React.FC = () => {
 
       if (studiedMinutes > 0) {
         const today = new Date().toLocaleDateString("sv-SE");
-        const user = auth.currentUser;
+        const user = auth?.currentUser;
 
         if (user) {
-          const ref = doc(db, "users", user.uid, "records", today);
+          const ref = doc(db!, "users", user.uid, "records", today);
           const snap = await getDoc(ref);
 
           if (snap.exists()) {
@@ -326,7 +328,7 @@ const HomePage: React.FC = () => {
                     setShowInvalidDateMessage(false);
 
                     if (user) {
-                      const ref = doc(db, "users", user.uid, "settings", "event");
+                      const ref = doc(db!, "users", user.uid, "settings", "event");
                       await setDoc(ref, {
                         name: eventName,
                         targetDate: targetDate,
@@ -348,7 +350,7 @@ const HomePage: React.FC = () => {
                     setHasEvent(false);
                     setShowInvalidDateMessage(false);
                     if (user) {
-                      const ref = doc(db, "users", user.uid, "settings", "event");
+                      const ref = doc(db!, "users", user.uid, "settings", "event");
                       await setDoc(ref, {
                         name: "共通テスト",
                         targetDate: todayStr,

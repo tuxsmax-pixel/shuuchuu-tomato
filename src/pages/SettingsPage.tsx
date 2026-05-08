@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getAuth, signOut } from "firebase/auth";
-import { app } from "../firebase";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
 
 // 通知音選択肢（拡張子付きファイル名も指定）
 const soundOptions = [
@@ -90,8 +90,9 @@ const SettingsPage: React.FC = () => {
 
   // 🔓 ログアウト処理
   const handleLogout = async () => {
+    if (!auth) return;
+
     try {
-      const auth = getAuth(app);
       await signOut(auth);
       alert("ログアウトしました！");
       window.location.href = "/"; // ホームに戻す
